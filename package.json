@@ -1,0 +1,15 @@
+{
+  "name": "@multisynq/datahandle-copier",
+  "version": "1.0.0",
+  "description": "Copies Croquet Data to Multisynq Data",
+  "bin": {
+    "multisynq-datahandle-copier": "./datahandle-copier.js"
+  },
+  "main": "datahandle-copier.js",
+  "type": "module",
+  "author": "Croquet Labs",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@croquet/croquet": "^2.0.3"
+  }
+}
