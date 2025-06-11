@@ -5,6 +5,7 @@
 // to a new handle stored on a Multisynq file server.
 
 import { Model, View, Session, Data } from '@croquet/croquet';
+import { urlFromHandle } from './util.js';
 
 const src = process.argv[2];
 if (!src) {
@@ -17,8 +18,7 @@ if (!src[0] === '3') {
     process.exit(1);
 }
 
-const srcUrl = getUrl(src);
-const srcURL = new URL(srcUrl);
+const srcURL = new URL(urlFromHandle(src));
 if (!srcURL.hostname.endsWith('croquet.io')) {
     console.log('Source URL host is', srcURL.hostname);
     console.error('This script is meant to copy data from croquet.io to multisynq.io! Aborting.');
@@ -37,33 +37,15 @@ Session.join({
     console.log('Session started', session.id);
 
     const srcHandle = Data.fromId(src);
-    console.log('Source URL:', getUrl(src));
+    console.log('Source URL:', urlFromHandle(src));
     const data = await session.data.fetch(srcHandle);
     console.log('Data fetched:', data.length, 'bytes');
 
     const dstHandle = await session.data.store(data.buffer, {shareable: true});
     const dst = Data.toId(dstHandle);
-    console.log('Destination URL:', getUrl(dst));
+    console.log('Destination URL:', urlFromHandle(dst));
     console.log('Data copied to new handle:\n')
     console.log(dst);
 
     process.exit(0);
 });
-
-
-// Helper functions from Croquet's data.js
-
-function getUrl(id) {
-    const key = fromBase64Url(id.slice(1, 1 + 43));
-    const url = scramble(key, atob(fromBase64Url(id.slice(1 + 43))));
-    return url;
-}
-
-function scramble(key, string) {
-    if (!key) key = '*';
-    return string.replace(/[\s\S]/g, c => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(0)));
-}
-
-function fromBase64Url(base64url) {
-    return base64url.replace(/-/g, "+").replace(/_/g, "/").padEnd((base64url.length + 3) & ~3, "=");
-}
